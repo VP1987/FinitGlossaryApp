@@ -22,7 +22,7 @@ namespace FinitiGlossary.Api.Controllers.Auth
         {
             try
             {
-                var result = await _authService.RegisterAsync(request.Username, request.Email, request.Password);
+                var result = await _authService.RegisterAsync(request);
 
                 if (!result.Success)
                 {
@@ -43,7 +43,7 @@ namespace FinitiGlossary.Api.Controllers.Auth
         {
             try
             {
-                var result = await _authService.LoginAsync(request.Email, request.Password);
+                var result = await _authService.LoginAsync(request);
 
                 if (!result.Success)
                 {
@@ -107,7 +107,7 @@ namespace FinitiGlossary.Api.Controllers.Auth
         {
             try
             {
-                var result = await _authService.ResetPasswordConfirmAsync(request.Token, request.NewPassword);
+                var result = await _authService.ResetPasswordConfirmAsync(request);
 
                 if (!result.Success)
                 {
@@ -128,11 +128,11 @@ namespace FinitiGlossary.Api.Controllers.Auth
         {
             try
             {
-                var result = await _authService.CompleteProfileUpdateAsync(
+                var result = await _authService.CompleteProfileUpdateAsync(new UpdateProfileRequest(
                     request.UserId,
                     request.NewUsername,
                     request.NewEmail,
-                    request.NewPassword
+                    request.NewPassword)
                 );
 
                 if (!result.Success)

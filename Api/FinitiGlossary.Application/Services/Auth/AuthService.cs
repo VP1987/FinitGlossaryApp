@@ -1,4 +1,5 @@
-﻿using FinitiGlossary.Application.DTOs.Response;
+﻿using FinitiGlossary.Application.DTOs.Request;
+using FinitiGlossary.Application.DTOs.Response;
 using FinitiGlossary.Application.Interfaces.Auth;
 using FinitiGlossary.Application.Interfaces.Repositories.Token;
 using FinitiGlossary.Application.Interfaces.Repositories.UserIRepo;
@@ -34,18 +35,18 @@ namespace FinitiGlossary.Application.Services.Auth
         // ============================================================
         // REGISTER
         // ============================================================
-        public async Task<UnifiedResponse> RegisterAsync(string username, string email, string password)
+        public async Task<UnifiedResponse> RegisterAsync(RegisterRequest request)
         {
-            var exists = await _users.ExistsByEmailAsync(email);
+            var exists = await _users.ExistsByEmailAsync(request.Email);
             if (exists)
                 throw new InvalidOperationException("User with this email already exists.");
 
-            var passwordHash = _hasher.Hash(password);
+            var passwordHash = _hasher.Hash(request.Password);
 
             var user = new User
             {
-                Username = username,
-                Email = email,
+                Username = request.Username,
+                Email = request.Email,
                 PasswordHash = passwordHash,
                 Role = "User",
                 IsAdmin = false,
@@ -60,12 +61,12 @@ namespace FinitiGlossary.Application.Services.Auth
         // ============================================================
         // LOGIN
         // ============================================================
-        public async Task<AuthResponse> LoginAsync(string email, string password)
+        public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _users.GetByEmailAsync(email)
+            var user = await _users.GetByEmailAsync(request.Email)
                 ?? throw new InvalidOperationException("Invalid email or password.");
 
-            if (!_hasher.Verify(password, user.PasswordHash))
+            if (!_hasher.Verify(request.Password, user.PasswordHash))
                 throw new InvalidOperationException("Invalid email or password.");
 
             var jwt = GenerateJwtToken(user);
@@ -136,18 +137,18 @@ namespace FinitiGlossary.Application.Services.Auth
         // ============================================================
         // PASSWORD CONFIRM
         // ============================================================
-        public async Task<UnifiedResponse> ResetPasswordConfirmAsync(string token, string newPassword)
+        public async Task<UnifiedResponse> ResetPasswordConfirmAsync(ResetPasswordConfirmRequest request)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(request.Token))
                 throw new InvalidOperationException("Invalid reset token.");
 
-            var user = await _users.GetByResetTokenAsync(token)
+            var user = await _users.GetByResetTokenAsync(request.Token)
                 ?? throw new InvalidOperationException("Invalid or expired reset token.");
 
             if (user.ResetTokenExpires == null || user.ResetTokenExpires < DateTime.UtcNow)
                 throw new InvalidOperationException("Reset token has expired.");
 
-            user.PasswordHash = _hasher.Hash(newPassword);
+            user.PasswordHash = _hasher.Hash(request.NewPassword);
             user.ResetToken = null;
             user.ResetTokenExpires = null;
 
@@ -204,35 +205,33 @@ namespace FinitiGlossary.Application.Services.Auth
             return await _users.GetByEmailAsync(email);
         }
 
-        public async Task<UnifiedResponse> CompleteProfileUpdateAsync(
-    int userId,
-    string newUsername,
-    string newEmail,
-    string newPassword)
+        public async Task<UnifiedResponse> CompleteProfileUpdateAsync(UpdateProfileRequest request)
         {
-            var user = await _users.GetUserByIdAsync(userId)
+            var user = await _users.GetUserByIdAsync(request.UserId)
                 ?? throw new InvalidOperationException("User not found.");
 
-            if (string.IsNullOrWhiteSpace(newUsername))
+            if (string.IsNullOrWhiteSpace(request.NewUsername))
             {
                 throw new InvalidOperationException("Username cannot be empty.");
             }
 
-            if (string.IsNullOrWhiteSpace(newEmail))
+            if (string.IsNullOrWhiteSpace(request.NewEmail))
             {
                 throw new InvalidOperationException("Email cannot be empty.");
             }
 
-            if (string.IsNullOrWhiteSpace(newPassword))
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
             {
                 throw new InvalidOperationException("Password cannot be empty.");
             }
 
-            user.Username = newUsername;
-            user.Email = newEmail;
-            user.PasswordHash = _hasher.Hash(newPassword);
-            user.MustUpdateProfile = false;
 
+
+            user.Username = request.NewUsername;
+            user.Email = request.NewEmail;
+            user.PasswordHash = _hasher.Hash(request.NewPassword);
+            user.MustUpdateProfile = false;
+            user.MustChangePassword = false;
             await _users.UpdateAsync(user);
 
             return new UnifiedResponse(true, "Profile updated successfully.");
