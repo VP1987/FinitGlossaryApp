@@ -2,7 +2,7 @@
 using FinitiGlossary.Domain.Entities.Terms;
 using FinitiGlossary.Domain.Entities.Users;
 
-namespace FinitiGlossary.Application.Interfaces.Repositories.Admin
+namespace FinitiGlossary.Application.Interfaces.Repositories.Term.Admin
 {
     public interface IAdminGlossaryRepository
     {
@@ -14,7 +14,6 @@ namespace FinitiGlossary.Application.Interfaces.Repositories.Admin
         Task<List<ArchivedGlossaryTerm>> GetArchivedByStableIdAsync(Guid stableId);
         Task<ArchivedGlossaryTerm?> GetArchivedVersionAsync(Guid stableId, int version);
         Task<int> GetLatestVersionAsync(Guid stableId);
-
 
         void AddActiveTerm(GlossaryTerm term);
         void RemoveActiveTerm(GlossaryTerm term);

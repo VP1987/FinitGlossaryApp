@@ -23,9 +23,9 @@ namespace FinitiGlossary.Application.Aggregators.AdminView
 
 
             var userMap = users.ToDictionary(
-     u => u.Id,
-     u => u.Username
- );
+                                                 u => u.Id,
+                                                 u => u.Username
+                                             );
 
             string U(int? id)
             {

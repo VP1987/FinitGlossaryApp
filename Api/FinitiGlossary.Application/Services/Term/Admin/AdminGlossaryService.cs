@@ -2,7 +2,7 @@
 using FinitiGlossary.Application.DTOs.Response;
 using FinitiGlossary.Application.DTOs.Term.Admin;
 using FinitiGlossary.Application.Interfaces.Agregator;
-using FinitiGlossary.Application.Interfaces.Repositories.Admin;
+using FinitiGlossary.Application.Interfaces.Repositories.Term.Admin;
 using FinitiGlossary.Application.Interfaces.Repositories.UserIRepo;
 using FinitiGlossary.Application.Interfaces.Term.Admin;
 using FinitiGlossary.Domain.Entities.Terms;

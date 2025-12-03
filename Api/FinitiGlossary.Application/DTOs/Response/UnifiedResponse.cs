@@ -1,4 +1,3 @@
-﻿namespace FinitiGlossary.Application.DTOs.Response
-{
-    public record UnifiedResponse(bool Success, string Message);
-}
+﻿namespace FinitiGlossary.Application.DTOs.Response;
+
+public record UnifiedResponse(bool Success, string Message);
