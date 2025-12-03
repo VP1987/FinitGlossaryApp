@@ -1,10 +1,12 @@
 ﻿using FinitiGlossary.Application.Interfaces.Auth;
-using FinitiGlossary.Application.Interfaces.Repositories.Admin;
+using FinitiGlossary.Application.Interfaces.Repositories.Term.Admin;
+using FinitiGlossary.Application.Interfaces.Repositories.Term.Public;
 using FinitiGlossary.Application.Interfaces.Repositories.Token;
 using FinitiGlossary.Application.Interfaces.Repositories.UserIRepo;
 using FinitiGlossary.Infrastructure.DAL;
 using FinitiGlossary.Infrastructure.Repositories.Auth.Token;
 using FinitiGlossary.Infrastructure.Repositories.Term.Admin;
+using FinitiGlossary.Infrastructure.Repositories.Term.Public;
 using FinitiGlossary.Infrastructure.Repositories.UserRepo;
 using FinitiGlossary.Infrastructure.Seeding;
 using FinitiGlossary.Infrastructure.Services.Auth.PwdHasher;
@@ -30,6 +32,7 @@ namespace FinitiGlossary.Infrastructure.DependencyInjection
             services.AddScoped<IAdminGlossaryRepository, AdminGlossaryRepository>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<IPublicGlossaryRepository, PublicGlossaryRepository>();
             services.AddScoped<AdminSeeder>();
 
             var jwtSettings = configuration.GetSection("Jwt");

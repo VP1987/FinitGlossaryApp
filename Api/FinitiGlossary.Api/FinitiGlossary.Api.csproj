@@ -21,8 +21,4 @@
     <ProjectReference Include="..\FinitiGlossary.Infrastructure\FinitiGlossary.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Config\" />
-  </ItemGroup>
-
 </Project>

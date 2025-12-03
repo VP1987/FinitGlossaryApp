@@ -1,5 +1,5 @@
 ﻿using FinitiGlossary.Application.DTOs.Request;
-using FinitiGlossary.Application.Interfaces.Repositories.Admin;
+using FinitiGlossary.Application.Interfaces.Repositories.Term.Admin;
 using FinitiGlossary.Domain.Entities.Terms;
 using FinitiGlossary.Domain.Entities.Users;
 using FinitiGlossary.Infrastructure.DAL;
@@ -15,7 +15,6 @@ namespace FinitiGlossary.Infrastructure.Repositories.Term.Admin
         {
             _db = db;
         }
-
 
         public Task<List<GlossaryTerm>> GetActiveTermsForAdminViewAsync(GetTermsAdminRequest request)
         {
@@ -44,7 +43,6 @@ namespace FinitiGlossary.Infrastructure.Repositories.Term.Admin
 
             return query.ToListAsync();
         }
-
 
         public Task<GlossaryTerm?> GetActiveByIdAsync(int id)
         {

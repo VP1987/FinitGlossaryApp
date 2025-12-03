@@ -32,9 +32,6 @@ namespace FinitiGlossary.Application.Services.Auth
             _config = config;
         }
 
-        // ============================================================
-        // REGISTER
-        // ============================================================
         public async Task<UnifiedResponse> RegisterAsync(RegisterRequest request)
         {
             var exists = await _users.ExistsByEmailAsync(request.Email);
@@ -58,9 +55,6 @@ namespace FinitiGlossary.Application.Services.Auth
             return new UnifiedResponse(true, "User registered successfully.");
         }
 
-        // ============================================================
-        // LOGIN
-        // ============================================================
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var user = await _users.GetByEmailAsync(request.Email)
@@ -88,9 +82,6 @@ namespace FinitiGlossary.Application.Services.Auth
             );
         }
 
-        // ============================================================
-        // REFRESH TOKEN
-        // ============================================================
         public async Task<RefreshTokenResponse>
             RefreshTokenAsync(string refreshToken)
         {
@@ -108,9 +99,6 @@ namespace FinitiGlossary.Application.Services.Auth
             return new RefreshTokenResponse(true, newJwt, newRefresh.Token, "Token refreshed.");
         }
 
-        // ============================================================
-        // PASSWORD RESET REQUEST
-        // ============================================================
         public async Task<UnifiedResponse> ResetPasswordRequestAsync(string email)
         {
             var user = await _users.GetByEmailAsync(email)
@@ -134,9 +122,6 @@ namespace FinitiGlossary.Application.Services.Auth
             return new UnifiedResponse(true, "Password reset email has been sent.");
         }
 
-        // ============================================================
-        // PASSWORD CONFIRM
-        // ============================================================
         public async Task<UnifiedResponse> ResetPasswordConfirmAsync(ResetPasswordConfirmRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Token))
@@ -157,9 +142,6 @@ namespace FinitiGlossary.Application.Services.Auth
             return new UnifiedResponse(true, "Password has been reset successfully.");
         }
 
-        // ============================================================
-        // HELPERS
-        // ============================================================
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(
@@ -224,8 +206,6 @@ namespace FinitiGlossary.Application.Services.Auth
             {
                 throw new InvalidOperationException("Password cannot be empty.");
             }
-
-
 
             user.Username = request.NewUsername;
             user.Email = request.NewEmail;

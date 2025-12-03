@@ -1,9 +1,8 @@
-﻿namespace FinitiGlossary.Domain.Entities.Terms.Status
+﻿namespace FinitiGlossary.Domain.Entities.Terms.Status;
+
+public enum TermStatus
 {
-    public enum TermStatus
-    {
-        Draft = 0,
-        Published = 1,
-        Archived = 2
-    }
+    Draft = 0,
+    Published = 1,
+    Archived = 2
 }
