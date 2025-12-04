@@ -1,6 +1,7 @@
 ﻿using FinitiGlossary.Application.DTOs.Request;
 using FinitiGlossary.Application.DTOs.Response;
 using FinitiGlossary.Application.Interfaces.Auth;
+using FinitiGlossary.Application.Interfaces.Auth.EMail;
 using FinitiGlossary.Application.Interfaces.Repositories.Token;
 using FinitiGlossary.Application.Interfaces.Repositories.UserIRepo;
 using FinitiGlossary.Domain.Entities.Auth.Token;
@@ -19,17 +20,20 @@ namespace FinitiGlossary.Application.Services.Auth
         private readonly IRefreshTokenRepository _refreshTokens;
         private readonly IConfiguration _config;
         private readonly IPasswordHasher _hasher;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             IUserRepository users,
             IRefreshTokenRepository refreshTokens,
             IPasswordHasher hasher,
-            IConfiguration config)
+            IConfiguration config,
+            IEmailService emailService)
         {
             _users = users;
             _refreshTokens = refreshTokens;
             _hasher = hasher;
             _config = config;
+            _emailService = emailService;
         }
 
         public async Task<UnifiedResponse> RegisterAsync(RegisterRequest request)
@@ -101,8 +105,10 @@ namespace FinitiGlossary.Application.Services.Auth
 
         public async Task<UnifiedResponse> ResetPasswordRequestAsync(string email)
         {
-            var user = await _users.GetByEmailAsync(email)
-                ?? throw new InvalidOperationException("No user found with that email.");
+            var user = await _users.GetByEmailAsync(email);
+            if (user == null)
+                return new UnifiedResponse(false, "No user found with that email.");
+
 
             user.ResetToken = Guid.NewGuid().ToString();
             user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
@@ -117,8 +123,7 @@ namespace FinitiGlossary.Application.Services.Auth
                 <a href=""{resetUrl}"">{resetUrl}</a>
             ";
 
-            // TODO: Implement email service for sending password reset link.
-
+            await _emailService.SendAsync(new EmailMessageRequest(email, "Password Reset", html));
             return new UnifiedResponse(true, "Password reset email has been sent.");
         }
 
