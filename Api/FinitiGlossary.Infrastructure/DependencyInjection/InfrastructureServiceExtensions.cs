@@ -1,4 +1,5 @@
 ﻿using FinitiGlossary.Application.Interfaces.Auth;
+using FinitiGlossary.Application.Interfaces.Auth.EMail;
 using FinitiGlossary.Application.Interfaces.Repositories.Term.Admin;
 using FinitiGlossary.Application.Interfaces.Repositories.Term.Public;
 using FinitiGlossary.Application.Interfaces.Repositories.Token;
@@ -11,6 +12,7 @@ using FinitiGlossary.Infrastructure.Repositories.UserRepo;
 using FinitiGlossary.Infrastructure.Seeding;
 using FinitiGlossary.Infrastructure.Services.Auth.PwdHasher;
 using FinitiGlossary.Infrastructure.Services.Auth.Token;
+using FinitiGlossary.Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +35,7 @@ namespace FinitiGlossary.Infrastructure.DependencyInjection
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IPublicGlossaryRepository, PublicGlossaryRepository>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<AdminSeeder>();
 
             var jwtSettings = configuration.GetSection("Jwt");
