@@ -62,10 +62,10 @@ namespace FinitiGlossary.Application.Services.Auth
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var user = await _users.GetByEmailAsync(request.Email)
-                ?? throw new InvalidOperationException("Invalid email or password.");
+                ?? throw new InvalidOperationException("Invalid email.");
 
             if (!_hasher.Verify(request.Password, user.PasswordHash))
-                throw new InvalidOperationException("Invalid email or password.");
+                throw new InvalidOperationException("Invalid password.");
 
             var jwt = GenerateJwtToken(user);
             var refresh = CreateRefreshToken(user.Id);

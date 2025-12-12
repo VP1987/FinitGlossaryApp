@@ -31,6 +31,10 @@ namespace FinitiGlossary.Api.Controllers.Auth
 
                 return Ok(new { message = result.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Register failed.");
@@ -41,6 +45,7 @@ namespace FinitiGlossary.Api.Controllers.Auth
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            //await Task.Delay(2000);
             try
             {
                 var result = await _authService.LoginAsync(request);
@@ -52,6 +57,10 @@ namespace FinitiGlossary.Api.Controllers.Auth
 
                 return Ok(result
                 );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -95,6 +104,10 @@ namespace FinitiGlossary.Api.Controllers.Auth
 
                 return Ok(new { message = result.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Reset password request failed.");
@@ -116,6 +129,10 @@ namespace FinitiGlossary.Api.Controllers.Auth
 
                 return Ok(new { message = result.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Reset password confirm failed.");
@@ -124,7 +141,7 @@ namespace FinitiGlossary.Api.Controllers.Auth
         }
 
         [HttpPost("complete-profile-update")]
-        public async Task<IActionResult> CompleteProfileUpdate([FromBody] CompleteProfileUpdateRequest request)
+        public async Task<IActionResult> CompleteProfileUpdate([FromBody] UpdateProfileRequest request)
         {
             try
             {
