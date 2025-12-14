@@ -1,4 +1,5 @@
 ﻿using FinitiGlossary.Application.DTOs.Request;
+using FinitiGlossary.Application.DTOs.Term.Admin;
 using FinitiGlossary.Domain.Entities.Terms;
 using FinitiGlossary.Domain.Entities.Users;
 
@@ -6,6 +7,18 @@ namespace FinitiGlossary.Application.Interfaces.Repositories.Term.Admin
 {
     public interface IAdminGlossaryRepository
     {
+
+        Task<(List<AdminTermRow> Items, int Total)> GetAdminTermsPageAsync(
+    int userId,
+    string role,
+    string tab,
+    string? search,
+    string sort,
+    int offset,
+    int limit
+);
+
+
         Task<List<GlossaryTerm>> GetActiveTermsForAdminViewAsync(GetTermsAdminRequest request);
         Task<List<ArchivedGlossaryTerm>> GetArchivedTermsForAdminViewAsync(GetTermsAdminRequest request);
         Task<List<User>> GetAllUsersAsync();

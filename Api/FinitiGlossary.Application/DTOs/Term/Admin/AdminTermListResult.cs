@@ -2,5 +2,5 @@
 
 public record AdminTermListResult(
  AdminTermListMeta Meta,
- List<GlossaryAdminTermDTO> Data
+ List<AdminTermRow> Data
 );

@@ -1,4 +1,5 @@
 ﻿using FinitiGlossary.Application.Interfaces.Auth;
+using FinitiGlossary.Application.Interfaces.Auth.EMail;
 using FinitiGlossary.Application.Interfaces.Repositories.Token;
 using FinitiGlossary.Application.Interfaces.Repositories.UserIRepo;
 using FinitiGlossary.Application.Services.Auth;
@@ -12,6 +13,7 @@ namespace FinitiGlossary.Tests.Auth
         protected readonly Mock<IUserRepository> _userRepoMock;
         protected readonly Mock<IRefreshTokenRepository> _refreshRepoMock;
         protected readonly Mock<IPasswordHasher> _hasherMock;
+        protected readonly Mock<IEmailService> _emailServiceMock;
         protected readonly IConfiguration _config;
         protected readonly AuthService _authService;
 
@@ -20,7 +22,7 @@ namespace FinitiGlossary.Tests.Auth
             _userRepoMock = new Mock<IUserRepository>();
             _refreshRepoMock = new Mock<IRefreshTokenRepository>();
             _hasherMock = new Mock<IPasswordHasher>();
-
+            _emailServiceMock = new Mock<IEmailService>();
 
             var inMemoryConfig = new Dictionary<string, string?>
             {
@@ -38,7 +40,8 @@ namespace FinitiGlossary.Tests.Auth
                 _userRepoMock.Object,
                 _refreshRepoMock.Object,
                 _hasherMock.Object,
-                _config
+                _config,
+                _emailServiceMock.Object
             );
         }
     }

@@ -31,48 +31,79 @@ namespace FinitiGlossary.Application.Services.Term.Admin
             _userRepo = userRepo;
         }
 
-        public async Task<AdminTermListResult> GetAdminTermListAsync(ClaimsPrincipal user, AdminTermQuery query)
+        public async Task<AdminTermListResult> GetAdminTermListAsync(
+    ClaimsPrincipal user,
+    AdminTermQuery query)
         {
-            var (dbUser, role, userId) = await ValidateUserAsync(user);
-            bool isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+            var (_, role, userId) = await ValidateUserAsync(user);
 
-            var active = await _repo.GetActiveTermsForAdminViewAsync(new GetTermsAdminRequest(userId, role));
-            var archived = await _repo.GetArchivedTermsForAdminViewAsync(new GetTermsAdminRequest(userId, role));
-            var users = await _repo.GetAllUsersAsync();
-
-            var aggregated = _viewAgregator.AggregateAdminView(active, archived, users, userId, isAdmin);
-
-            var statusFilter = MapTabToStatus(query.Tab);
-            if (statusFilter != null)
-            {
-                aggregated = aggregated.Where(x => x.Status == (int)statusFilter.Value).ToList();
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.Search))
-            {
-                var s = query.Search.Trim().ToLower();
-                aggregated = aggregated
-                    .Where(x => x.Term.ToLower().Contains(s) || x.Definition.ToLower().Contains(s))
-                    .ToList();
-            }
-
-            aggregated = query.Sort switch
-            {
-                "dateAsc" => aggregated.OrderBy(x => x.CreatedOrArchivedAt).ToList(),
-                "dateDesc" => aggregated.OrderByDescending(x => x.CreatedOrArchivedAt).ToList(),
-                "az" => aggregated.OrderBy(x => x.Term).ToList(),
-                "za" => aggregated.OrderByDescending(x => x.Term).ToList(),
-                _ => aggregated.OrderByDescending(x => x.CreatedOrArchivedAt).ToList(),
-            };
-
-            var total = aggregated.Count;
-            var page = aggregated.Skip(query.Offset).Take(query.Limit).ToList();
+            var (items, total) = await _repo.GetAdminTermsPageAsync(
+                userId,
+                role,
+                query.Tab,
+                query.Search,
+                query.Sort,
+                query.Offset,
+                query.Limit
+            );
 
             return new AdminTermListResult(
-                new AdminTermListMeta(query.Offset, query.Limit, total, query.Offset + query.Limit < total, query.Sort, query.Search, query.Tab),
-                page
+                new AdminTermListMeta(
+                    query.Offset,
+                    query.Limit,
+                    total,
+                    query.Offset + query.Limit < total,
+                    query.Sort,
+                    query.Search,
+                    query.Tab
+                ),
+                items
             );
         }
+
+
+        //public async Task<AdminTermListResult> GetAdminTermListAsync(ClaimsPrincipal user, AdminTermQuery query)
+        //{
+        //    var (dbUser, role, userId) = await ValidateUserAsync(user);
+        //    bool isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+        //    var active = await _repo.GetActiveTermsForAdminViewAsync(new GetTermsAdminRequest(userId, role));
+        //    var archived = await _repo.GetArchivedTermsForAdminViewAsync(new GetTermsAdminRequest(userId, role));
+        //    var users = await _repo.GetAllUsersAsync();
+
+        //    var aggregated = _viewAgregator.AggregateAdminView(active, archived, users, userId, isAdmin);
+
+        //    var statusFilter = MapTabToStatus(query.Tab);
+        //    if (statusFilter != null)
+        //    {
+        //        aggregated = aggregated.Where(x => x.Status == (int)statusFilter.Value).ToList();
+        //    }
+
+        //    if (!string.IsNullOrWhiteSpace(query.Search))
+        //    {
+        //        var s = query.Search.Trim().ToLower();
+        //        aggregated = aggregated
+        //            .Where(x => x.Term.ToLower().Contains(s) || x.Definition.ToLower().Contains(s))
+        //            .ToList();
+        //    }
+
+        //    aggregated = query.Sort switch
+        //    {
+        //        "dateAsc" => aggregated.OrderBy(x => x.CreatedOrArchivedAt).ToList(),
+        //        "dateDesc" => aggregated.OrderByDescending(x => x.CreatedOrArchivedAt).ToList(),
+        //        "az" => aggregated.OrderBy(x => x.Term).ToList(),
+        //        "za" => aggregated.OrderByDescending(x => x.Term).ToList(),
+        //        _ => aggregated.OrderByDescending(x => x.CreatedOrArchivedAt).ToList(),
+        //    };
+
+        //    var total = aggregated.Count;
+        //    var page = aggregated.Skip(query.Offset).Take(query.Limit).ToList();
+
+        //    return new AdminTermListResult(
+        //        new AdminTermListMeta(query.Offset, query.Limit, total, query.Offset + query.Limit < total, query.Sort, query.Search, query.Tab),
+        //        page
+        //    );
+        //}
 
         public async Task<ArchiveResult> ArchiveTermAsync(int id, ClaimsPrincipal user)
         {

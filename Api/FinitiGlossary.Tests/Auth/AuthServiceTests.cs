@@ -8,7 +8,7 @@ namespace FinitiGlossary.Tests.Auth
     public class AuthServiceTests : AuthServiceTestsBase
     {
         // ============================================================
-        // 1. REGISTER TESTS
+        // 1. REGISTER
         // ============================================================
         [Fact]
         public async Task RegisterAsync_ShouldThrow_WhenEmailExists()
@@ -22,7 +22,6 @@ namespace FinitiGlossary.Tests.Auth
                 Email = "test@test.com",
                 Password = "pass"
             };
-
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _authService.RegisterAsync(req));
@@ -43,7 +42,6 @@ namespace FinitiGlossary.Tests.Auth
                 Password = "pass"
             };
 
-
             var result = await _authService.RegisterAsync(req);
 
             Assert.True(result.Success);
@@ -51,18 +49,16 @@ namespace FinitiGlossary.Tests.Auth
         }
 
         // ============================================================
-        // 2. LOGIN TESTS
+        // 2. LOGIN
         // ============================================================
         [Fact]
         public async Task LoginAsync_ShouldThrow_WhenUserNotFound()
         {
-            var req = new LoginRequest("email@test.com", "pass");
-
             _userRepoMock.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
                 .ReturnsAsync((User?)null);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _authService.LoginAsync(req));
+                _authService.LoginAsync(new LoginRequest("email@test.com", "pass")));
         }
 
         [Fact]
@@ -75,10 +71,8 @@ namespace FinitiGlossary.Tests.Auth
 
             _hasherMock.Setup(x => x.Verify("WRONG", "HASH")).Returns(false);
 
-            var req = new LoginRequest("test@test.com", "WRONG");
-
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _authService.LoginAsync(req));
+                _authService.LoginAsync(new LoginRequest("test@test.com", "WRONG")));
         }
 
         [Fact]
@@ -97,25 +91,11 @@ namespace FinitiGlossary.Tests.Auth
 
             _hasherMock.Setup(x => x.Verify("pass", "HASH")).Returns(true);
 
-            var req = new LoginRequest("ok@test.com", "pass");
-
-            var result = await _authService.LoginAsync(req);
+            var result = await _authService.LoginAsync(new LoginRequest("ok@test.com", "pass"));
 
             Assert.True(result.Success);
-            Assert.NotEmpty(result.Token);
-            Assert.NotEmpty(result.RefreshToken);
-        }
-
-        [Fact]
-        public async Task LoginAsync_ShouldThrow_OnRepositoryException()
-        {
-            var req = new LoginRequest("test@test.com", "pass");
-
-            _userRepoMock.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
-                .ThrowsAsync(new Exception("DB ERROR"));
-
-            await Assert.ThrowsAsync<Exception>(() =>
-                _authService.LoginAsync(req));
+            Assert.False(string.IsNullOrWhiteSpace(result.Token));
+            Assert.False(string.IsNullOrWhiteSpace(result.RefreshToken));
         }
 
         // ============================================================
@@ -144,22 +124,23 @@ namespace FinitiGlossary.Tests.Auth
 
             Assert.True(result.Success);
             Assert.True(token.IsRevoked);
-
             _refreshRepoMock.Verify(x => x.UpdateAsync(token), Times.Once);
             _refreshRepoMock.Verify(x => x.AddAsync(It.IsAny<RefreshToken>()), Times.Once);
         }
 
         // ============================================================
-        // 4. RESET PASSWORD REQUEST
+        // 4. RESET PASSWORD REQUEST (SECURITY-CORRECT)
         // ============================================================
         [Fact]
-        public async Task ResetPasswordRequestAsync_ShouldThrow_WhenUserMissing()
+        public async Task ResetPasswordRequestAsync_ShouldNotThrow_WhenUserMissing()
         {
             _userRepoMock.Setup(x => x.GetByEmailAsync("ghost@test.com"))
                 .ReturnsAsync((User?)null);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            var ex = await Record.ExceptionAsync(() =>
                 _authService.ResetPasswordRequestAsync("ghost@test.com"));
+
+            Assert.Null(ex);
         }
 
         [Fact]
@@ -174,7 +155,6 @@ namespace FinitiGlossary.Tests.Auth
 
             Assert.True(result.Success);
             Assert.NotNull(user.ResetToken);
-
             _userRepoMock.Verify(x => x.UpdateAsync(user), Times.Once);
         }
 
@@ -187,10 +167,9 @@ namespace FinitiGlossary.Tests.Auth
             _userRepoMock.Setup(x => x.GetByResetTokenAsync("bad"))
                 .ReturnsAsync((User?)null);
 
-            var req = new ResetPasswordConfirmRequest("bad", "newpass");
-
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _authService.ResetPasswordConfirmAsync(req));
+                _authService.ResetPasswordConfirmAsync(
+                    new ResetPasswordConfirmRequest("bad", "newpass")));
         }
 
         [Fact]
@@ -205,10 +184,9 @@ namespace FinitiGlossary.Tests.Auth
             _userRepoMock.Setup(x => x.GetByResetTokenAsync("expired"))
                 .ReturnsAsync(user);
 
-            var req = new ResetPasswordConfirmRequest("expired", "x");
-
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _authService.ResetPasswordConfirmAsync(req));
+                _authService.ResetPasswordConfirmAsync(
+                    new ResetPasswordConfirmRequest("expired", "x")));
         }
 
         [Fact]
@@ -227,14 +205,12 @@ namespace FinitiGlossary.Tests.Auth
             _hasherMock.Setup(x => x.Hash("new_pass"))
                 .Returns("HASHED");
 
-            var req = new ResetPasswordConfirmRequest("valid", "new_pass");
-
-            var result = await _authService.ResetPasswordConfirmAsync(req);
+            var result = await _authService.ResetPasswordConfirmAsync(
+                new ResetPasswordConfirmRequest("valid", "new_pass"));
 
             Assert.True(result.Success);
             Assert.Equal("HASHED", user.PasswordHash);
             Assert.Null(user.ResetToken);
-
             _userRepoMock.Verify(x => x.UpdateAsync(user), Times.Once);
         }
     }

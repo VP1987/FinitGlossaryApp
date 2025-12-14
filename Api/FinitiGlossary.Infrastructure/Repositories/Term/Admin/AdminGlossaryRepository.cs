@@ -1,4 +1,5 @@
 ﻿using FinitiGlossary.Application.DTOs.Request;
+using FinitiGlossary.Application.DTOs.Term.Admin;
 using FinitiGlossary.Application.Interfaces.Repositories.Term.Admin;
 using FinitiGlossary.Domain.Entities.Terms;
 using FinitiGlossary.Domain.Entities.Users;
@@ -14,6 +15,68 @@ namespace FinitiGlossary.Infrastructure.Repositories.Term.Admin
         public AdminGlossaryRepository(AppDbContext db)
         {
             _db = db;
+        }
+        public async Task<(List<AdminTermRow> Items, int Total)> GetAdminTermsPageAsync(
+    int userId,
+    string role,
+    string tab,
+    string? search,
+    string sort,
+    int offset,
+    int limit)
+        {
+            bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+
+            IQueryable<AdminTermRow> query =
+                _db.GlossaryTerms.Select(t => new AdminTermRow
+                {
+                    Id = t.Id,
+                    StableId = t.StableId,
+                    Term = t.Term,
+                    Definition = t.Definition,
+                    Status = (int)t.Status,
+                    CreatedOrArchivedAt = t.CreatedAt,
+                    CreatedById = t.CreatedById
+                });
+
+            if (!isAdmin)
+                query = query.Where(x => x.CreatedById == userId);
+
+            if (!string.IsNullOrWhiteSpace(tab))
+            {
+                var status = tab.ToLower() switch
+                {
+                    "draft" => 0,
+                    "published" => 1,
+                    "archived" => 2,
+                    _ => (int?)null
+                };
+
+                if (status != null)
+                    query = query.Where(x => x.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(x =>
+                    x.Term.Contains(search) ||
+                    x.Definition.Contains(search));
+
+            query = sort switch
+            {
+                "dateAsc" => query.OrderBy(x => x.CreatedOrArchivedAt),
+                "az" => query.OrderBy(x => x.Term),
+                "za" => query.OrderByDescending(x => x.Term),
+                _ => query.OrderByDescending(x => x.CreatedOrArchivedAt)
+            };
+
+            var total = await query.CountAsync();
+
+            var page = await query
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync();
+
+            return (page, total);
         }
 
         public Task<List<GlossaryTerm>> GetActiveTermsForAdminViewAsync(GetTermsAdminRequest request)
